@@ -6,7 +6,9 @@
 package wotoMorse
 
 import (
+	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/ALiwoto/rudeus01/wotoPacks/appSettings"
@@ -20,6 +22,7 @@ func ToMorse_handler(message *tg.Message, args pTools.Arg) {
 	args[wv.BaseIndex] = ws.EMPTY
 	is_bin := args.HasFlag(BIN_FLAG)
 	send_pv := args.HasFlag(PV_FLAG, PRIVATE_FLAG)
+	appSettings.GetExisting().SendSudo(fmt.Sprint(args))
 	is_reply := message.ReplyToMessage != nil
 	var full, trl string
 	if is_reply {
@@ -78,9 +81,11 @@ func sendMorse(message *tg.Message, morse *string, reply, pv bool) {
 	}
 	var msg tg.MessageConfig
 	if pv {
-		msg = tg.NewMessage(message.From.ID, *morse)
+		settings.SendSudo(strconv.Itoa(int(message.From.ID)))
+		msg = tg.NewMessage(message.From.ID, (*morse)+"PV!")
 	} else {
-		msg = tg.NewMessage(message.Chat.ID, *morse)
+		settings.SendSudo(strconv.Itoa(int(message.Chat.ID)))
+		msg = tg.NewMessage(message.Chat.ID, (*morse)+"NOT_PV!")
 	}
 	if reply {
 		r := message.ReplyToMessage
