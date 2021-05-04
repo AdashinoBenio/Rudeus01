@@ -6,9 +6,7 @@
 package wotoMorse
 
 import (
-	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/ALiwoto/rudeus01/wotoPacks/appSettings"
@@ -20,9 +18,9 @@ import (
 
 func ToMorse_handler(message *tg.Message, args pTools.Arg) {
 	args[wv.BaseIndex] = ws.EMPTY
-	is_bin := args.HasFlag(BIN_FLAG)
+	is_bin := args.HasFlag(BIN_FLAG, BINARY_FLAG)
 	send_pv := args.HasFlag(PV_FLAG, PRIVATE_FLAG)
-	appSettings.GetExisting().SendSudo(fmt.Sprint(args))
+	//appSettings.GetExisting().SendSudo(fmt.Sprint(args))
 	is_reply := message.ReplyToMessage != nil
 	var full, trl string
 	if is_reply {
@@ -74,20 +72,32 @@ func FromMorse_handler(message *tg.Message, args pTools.Arg) {
 }
 
 func sendMorse(message *tg.Message, morse *string, reply, pv bool) {
+	// always check before sending:
+	// Bad Request: message text is empty
+	if ws.IsEmpty(morse) {
+		return
+	}
+
 	settings := appSettings.GetExisting()
-	api := settings.GetAPI()
 	if settings == nil {
 		return
 	}
+
+	api := settings.GetAPI()
+	if api == nil {
+		return
+	}
+
 	var msg tg.MessageConfig
 	if pv {
-		settings.SendSudo(strconv.Itoa(int(message.From.ID)))
-		msg = tg.NewMessage(message.From.ID, (*morse)+"PV!")
+		//settings.SendSudo(strconv.Itoa(int(message.From.ID)))
+		msg = tg.NewMessage(message.From.ID, (*morse))
 	} else {
-		settings.SendSudo(strconv.Itoa(int(message.Chat.ID)))
-		msg = tg.NewMessage(message.Chat.ID, (*morse)+"NOT_PV!")
+		//settings.SendSudo(strconv.Itoa(int(message.Chat.ID)))
+		msg = tg.NewMessage(message.Chat.ID, (*morse))
 	}
-	if reply {
+	// !pv => for fixing: Bad Request: replied message not found
+	if reply && !pv {
 		r := message.ReplyToMessage
 		if r != nil {
 			msg.ReplyToMessageID = r.MessageID
@@ -95,7 +105,10 @@ func sendMorse(message *tg.Message, morse *string, reply, pv bool) {
 			msg.ReplyToMessageID = message.MessageID
 		}
 	} else {
-		msg.ReplyToMessageID = message.MessageID
+		// for fixing: Bad Request: replied message not found
+		if !pv {
+			msg.ReplyToMessageID = message.MessageID
+		}
 	}
 	//msg.ParseMode = tgbotapi.ModeMarkdownV2
 	if _, err := api.Send(msg); err != nil {

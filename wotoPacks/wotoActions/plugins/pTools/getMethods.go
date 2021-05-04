@@ -6,7 +6,6 @@
 package pTools
 
 import (
-	"log"
 	"strings"
 
 	ws "github.com/ALiwoto/rudeus01/wotoPacks/wotoSecurity"
@@ -14,7 +13,7 @@ import (
 )
 
 func IsFlag(value string) bool {
-	log.Println("In IsFlag, I'm going to check", value)
+	//log.Println("In IsFlag, I'm going to check", value)
 	return strings.HasPrefix(value, wv.FLAG_PREFEX)
 }
 
@@ -22,12 +21,15 @@ func IsFlag(value string) bool {
 func (_a *Arg) GetFlags() []string {
 	cap := len(*_a) - wv.BaseOneIndex
 	strs := make([]string, wv.BaseIndex, cap)
+	var current string
 	for _, str := range *_a {
-		log.Println("in range, we are going to check ", str)
+		//log.Println("in range, we are going to check ", str)
 		//appSettings.GetExisting().SendSudo("Is NIL!") // TODO
 		if IsFlag(str) {
-			log.Println("I've already checked str and it was flag.")
-			strs = append(strs, strings.TrimPrefix(str, wv.FLAG_PREFEX))
+			//log.Println("I've already checked str and it was flag.")
+			current = strings.TrimPrefix(str, wv.FLAG_PREFEX)
+			current = strings.ToLower(current)
+			strs = append(strs, current)
 		}
 	}
 	return strs
@@ -60,7 +62,7 @@ func (_a *Arg) hasFlag(flag string) bool {
 	// right, I don't trust myself!
 	// also TrimPrefix function has a checker in itself.
 	flag = strings.TrimPrefix(flag, wv.FLAG_PREFEX)
-	log.Println("After Trimming, the flag is:", flag)
+	//log.Println("After Trimming, the flag is:", flag)
 	flags := _a.GetFlags()
 
 	//appSettings.GetExisting().SendSudo(fmt.Sprint("a.getFlags result:", flags))
