@@ -1,6 +1,13 @@
+// Rudeus Telegram Bot Project
+// Copyright (C) 2021 wotoTeam, ALiwoto
+// This file is subject to the terms and conditions defined in
+// file 'LICENSE', which is part of the source code.
+
 package wotoMD
 
 import (
+	"strconv"
+
 	"github.com/ALiwoto/rudeus01/wotoPacks/interfaces"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoSecurity/wotoStrings"
 	wv "github.com/ALiwoto/rudeus01/wotoPacks/wotoValues"
@@ -30,6 +37,21 @@ func GetItalic(value string) interfaces.WMarkDown {
 func GetMono(value string) interfaces.WMarkDown {
 	final := repairValue(value)
 	final = string(CHAR_S16) + final + string(CHAR_S16)
+	return toWotoMD(final)
+}
+
+// GetUserMention will give you a mentioning style username with the
+// specified text.
+// WARNING: you don't need to repair text before sending it as first arg,
+// this function will check it itself.
+func GetUserMention(text string, userID int64) interfaces.WMarkDown {
+	final := repairValue(text)
+	final = string(CHAR_S7) + final +
+		string(CHAR_S8) +
+		string(CHAR_S9) + TG_USER_ID +
+		strconv.FormatInt(userID, wv.BaseTen) +
+		string(CHAR_S10)
+
 	return toWotoMD(final)
 }
 

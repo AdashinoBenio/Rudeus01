@@ -14,24 +14,33 @@ import (
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoMD"
 	ws "github.com/ALiwoto/rudeus01/wotoPacks/wotoSecurity/wotoStrings"
 	wv "github.com/ALiwoto/rudeus01/wotoPacks/wotoValues"
+	"github.com/ALiwoto/rudeus01/wotoPacks/wotoValues/tgMessages"
 	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func ToMorse_handler(message *tg.Message, args pTools.Arg) {
+	// set the first element of args to empty,
+	// because pTools.Arg also contains the command itself,
+	// however we don't want that here.
 	args[wv.BaseIndex] = wv.EMPTY
+
 	is_bin := args.HasFlag(BIN_FLAG, BINARY_FLAG)
 	send_pv := args.HasFlag(PV_FLAG, PRIVATE_FLAG)
-	//appSettings.GetExisting().SendSudo(fmt.Sprint(args))
+
 	is_reply := message.ReplyToMessage != nil
 	var full, trl string
 	if is_reply {
 		if !ws.IsEmpty(&message.ReplyToMessage.Text) {
 			full = message.ReplyToMessage.Text
 		} else {
+			// we should check if the replied message has text or not,
+			// and since it doesn't have any text value, then we should not
+			// do any operations on it.
 			return
 		}
 	} else {
-		full = strings.Join(args, wv.SPACE_VALUE)
+		// do not convert the flags to the morse code.
+		full = args.JoinNoneFlags()
 	}
 
 	if is_bin {
@@ -55,9 +64,14 @@ func ToMorse_handler(message *tg.Message, args pTools.Arg) {
 }
 
 func FromMorse_handler(message *tg.Message, args pTools.Arg) {
+	// set the first element of args to empty,
+	// because pTools.Arg also contains the command itself,
+	// however we don't want that here.
 	args[wv.BaseIndex] = wv.EMPTY
+
 	is_reply := message.ReplyToMessage != nil
 	send_pv := args.HasFlag(PV_FLAG, PRIVATE_FLAG)
+
 	var full string
 	if is_reply {
 		if !ws.IsEmpty(&message.ReplyToMessage.Text) {
@@ -107,6 +121,7 @@ func sendMorse(message *tg.Message, morse *string, reply, pv bool) {
 		//settings.SendSudo(strconv.Itoa(int(message.Chat.ID)))
 		msg = tg.NewMessage(message.Chat.ID, (*morse))
 	}
+
 	// !pv => for fixing: Bad Request: replied message not found
 	if reply && !pv {
 		r := message.ReplyToMessage
@@ -125,7 +140,8 @@ func sendMorse(message *tg.Message, morse *string, reply, pv bool) {
 	if _, err := api.Send(msg); err != nil {
 
 		log.Println(err)
-		settings.SendSudo(err.Error())
+		tgErr := tgMessages.GetTgError(err)
+		tgErr.SendRandomErrorMessage(message)
 		return
 	}
 }
