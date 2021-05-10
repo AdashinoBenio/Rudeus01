@@ -3,11 +3,13 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE', which is part of the source code.
 
-package dbTypes
+package wotoPat
 
-// the DATABASE type
-type DATABASE string
-type COLLECTION string
+// the pat type, when sending a files, we should use this type.
+type patType uint8
 
-// the index of the db client.
-type DB_INDEX uint8
+// the pat types values.
+const (
+	NONE      patType = 0
+	PHOTO_PAT patType = 1
+)

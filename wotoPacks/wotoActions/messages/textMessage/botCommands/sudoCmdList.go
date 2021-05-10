@@ -12,8 +12,9 @@ import (
 
 // sudo commands
 const (
-	TEST_SUDO_CMD = "test"
-	SUDO_SUDO_CMD = "sudo"
+	TestSudoCmd = "test" // for wotoTest plugin
+	SudoSudoCmd = "sudo" // for wotoSudo plugin
+	PatSudoCmd  = "pat"  // for wotoPat plugin
 )
 
 var sudoCMDList map[string]func(*tg.Message, pTools.Arg)
@@ -22,24 +23,34 @@ func sudoListInit() {
 	if sudoCMDList != nil {
 		return
 	}
-	//log.Println("In Init!")
+
 	sudoCMDList = make(map[string]func(*tg.Message, pTools.Arg))
-	add_testSudoCMD()
-	add_sudoSudoCMD()
+
+	addTestSudoCMD()
+	addSudoSudoCMD()
+	addPatSudoCMD()
 }
 
-func add_testSudoCMD() {
+func addTestSudoCMD() {
 	if sudoCMDList != nil {
-		if sudoCMDList[TEST_SUDO_CMD] == nil {
-			sudoCMDList[TEST_SUDO_CMD] = testCommandHandle
+		if sudoCMDList[TestSudoCmd] == nil {
+			sudoCMDList[TestSudoCmd] = testCommandHandler
 		}
 	}
 }
 
-func add_sudoSudoCMD() {
+func addSudoSudoCMD() {
 	if sudoCMDList != nil {
-		if sudoCMDList[SUDO_SUDO_CMD] == nil {
-			sudoCMDList[SUDO_SUDO_CMD] = sudoCommandHandle
+		if sudoCMDList[SudoSudoCmd] == nil {
+			sudoCMDList[SudoSudoCmd] = sudoCommandHandler
+		}
+	}
+}
+
+func addPatSudoCMD() {
+	if sudoCMDList != nil {
+		if sudoCMDList[PatSudoCmd] == nil {
+			sudoCMDList[PatSudoCmd] = patCommandHandler
 		}
 	}
 }

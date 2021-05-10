@@ -3,11 +3,9 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE', which is part of the source code.
 
-package dbTypes
+package wotoValues
 
-// the DATABASE type
-type DATABASE string
-type COLLECTION string
-
-// the index of the db client.
-type DB_INDEX uint8
+const (
+	PAT_ID_KEY   = "pat_id"
+	PAT_TYPE_KEY = "pat_type"
+)
