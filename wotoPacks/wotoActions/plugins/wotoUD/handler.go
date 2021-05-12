@@ -114,6 +114,8 @@ func getButton(word string, page uint8, id int,
 			b02,
 		),
 	)
+	next.setButtons(&buttons)
+	pre.setButtons(&buttons)
 
 	return &buttons
 }
@@ -152,6 +154,7 @@ func QUdHanler(query *tg.CallbackQuery, q *wq.QueryBase) {
 	msgId := query.Message.MessageID
 
 	eConfig := tg.NewEditMessageText(chat, msgId, text)
+	eConfig.ReplyMarkup = udData.keyboard
 	eConfig.ParseMode = tg.ModeMarkdownV2
 
 	api.Request(eConfig)
