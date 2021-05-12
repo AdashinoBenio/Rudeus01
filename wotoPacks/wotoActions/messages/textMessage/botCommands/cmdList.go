@@ -5,7 +5,7 @@
 
 package botCommands
 
-import wn "github.com/ALiwoto/rudeus01/wotoPacks/wotoNeko"
+import wn "github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/wotoNeko"
 
 // non-sudo commands
 const (
@@ -18,6 +18,9 @@ const (
 	PattuCmd     = "pattu"     // wotoPat plugin
 	FoxCmd       = "fox"       // wotoNekosLife plugin
 	FoxyCmd      = "foxy"      // wotoNekosLife plugin
+	udCmd        = "ud"        // wotoNekosLife plugin
+	defCmd       = "def"       // wotoNekosLife plugin
+	defineCmd    = "define"    // wotoNekosLife plugin
 )
 
 var cmdList map[string]CmdHandler
@@ -33,6 +36,7 @@ func cmdListInit() {
 	addTrCmdList()
 	addPatCmdList()
 	addNekosLifeCmdList()
+	addUdCmdList()
 }
 
 func addMorseCmdList() {
@@ -113,6 +117,62 @@ func addNekosLifeCmdList() {
 		}
 		if cmdList[string(wn.Cuddle)] == nil {
 			cmdList[string(wn.Cuddle)] = cuddleNekoHandler
+		}
+		if cmdList[string(wn.Kemonomimi)] == nil {
+			cmdList[string(wn.Kemonomimi)] = kemonomimiNekoHandler
+		}
+		if cmdList[string(wn.Holo)] == nil {
+			cmdList[string(wn.Holo)] = holoNekoHandler
+		}
+		if cmdList[string(wn.Smug)] == nil {
+			cmdList[string(wn.Smug)] = smugNekoHandler
+		}
+		if cmdList[string(wn.Baka)] == nil {
+			cmdList[string(wn.Baka)] = bakaNekoHandler
+		}
+		if cmdList[string(wn.Woof)] == nil {
+			cmdList[string(wn.Woof)] = woofNekoHandler
+		}
+		if cmdList[string(wn.Goose)] == nil {
+			cmdList[string(wn.Goose)] = gooseNekoHandler
+		}
+		if cmdList[string(wn.Gecg)] == nil {
+			cmdList[string(wn.Gecg)] = gecgNekoHandler
+		}
+		if cmdList[string(wn.Avatar)] == nil {
+			cmdList[string(wn.Avatar)] = avatarNekoHandler
+		}
+		if cmdList[string(wn.Waifu)] == nil {
+			cmdList[string(wn.Waifu)] = waifuNekoHandler
+		}
+		if cmdList[wn.WhyText] == nil {
+			cmdList[wn.WhyText] = whyNekoHandler
+		}
+		if cmdList[wn.NameText] == nil {
+			cmdList[wn.NameText] = nameNekoHandler
+		}
+		if cmdList[wn.CatText] == nil {
+			cmdList[wn.CatText] = catNekoHandler
+		}
+		if cmdList[wn.FactText] == nil {
+			cmdList[wn.FactText] = factNekoHandler
+		}
+		if cmdList[wn.OwoText] == nil {
+			cmdList[wn.OwoText] = owoNekoHandler
+		}
+	}
+}
+
+func addUdCmdList() {
+	if cmdList != nil {
+		if cmdList[udCmd] == nil {
+			cmdList[udCmd] = udHandler
+		}
+		if cmdList[defCmd] == nil {
+			cmdList[defCmd] = udHandler
+		}
+		if cmdList[defineCmd] == nil {
+			cmdList[defineCmd] = udHandler
 		}
 	}
 }

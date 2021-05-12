@@ -11,6 +11,7 @@ import (
 	"github.com/ALiwoto/rudeus01/wotoPacks/appSettings"
 	wa "github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/common"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoValues"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -102,6 +103,15 @@ func patExists(ID string) bool {
 	return false
 }
 
+func patArrayExists(photo []tgbotapi.PhotoSize) bool {
+	for _, current := range photo {
+		if patExists(current.FileID) {
+			return true
+		}
+	}
+	return false
+}
+
 func patHExists(ID string) bool {
 	if patHMap == nil {
 		return false
@@ -119,6 +129,15 @@ func patHExists(ID string) bool {
 		}
 	}
 
+	return false
+}
+
+func patArrayHExists(photo []tgbotapi.PhotoSize) bool {
+	for _, current := range photo {
+		if patHExists(current.FileID) {
+			return true
+		}
+	}
 	return false
 }
 

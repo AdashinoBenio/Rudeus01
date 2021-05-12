@@ -13,7 +13,7 @@ import (
 	"github.com/ALiwoto/rudeus01/wotoPacks/appSettings"
 	wa "github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/common"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/pTools"
-	"github.com/ALiwoto/rudeus01/wotoPacks/wotoNeko"
+	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/wotoNeko"
 	ws "github.com/ALiwoto/rudeus01/wotoPacks/wotoSecurity/wotoStrings"
 	wv "github.com/ALiwoto/rudeus01/wotoPacks/wotoValues"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoValues/tgMessages"
@@ -27,11 +27,18 @@ func PatHandler(message *tg.Message, args pTools.Arg) {
 		return
 	}
 
+	text := wv.EMPTY
 	settings := appSettings.GetExisting()
 	is_hentai := args.HasFlag(HENTAI_FLAG)
 	send_pv := args.HasFlag(PRIVATE_FLAG, PV_FLAG)
 	is_reply := message.ReplyToMessage != nil
 	is_del := is_reply && args.HasFlag(DEL_FLAG, DELETE_FLAG)
+	only_photo := args.HasFlag(PH_FLAG, PHOTO_FLAG)
+	hasMsg := args.HasFlag(MSG_FLAG, MESSAGE_FLAG)
+
+	if hasMsg {
+		text = args.JoinNoneFlags(false)
+	}
 
 	if is_hentai {
 		if !settings.IsSudo(message.From.ID) {
@@ -50,11 +57,23 @@ func PatHandler(message *tg.Message, args pTools.Arg) {
 			return
 		}
 
-		sendPat(message, id, t, is_hentai, false)
+		sendPat(message, text, id, t, is_hentai, false)
 		return
 	}
 
-	if time.Now().Second()%wv.BaseTwoIndex == wv.BaseIndex {
+	chance := getChance(only_photo)
+	delFunc := func() {
+		if is_del {
+			req := tg.NewDeleteMessage(message.Chat.ID, message.MessageID)
+			// don't check error or response, we have
+			// more important things to do
+			go settings.GetAPI().Request(req)
+		}
+	}
+
+	switch chance {
+	case wv.BaseIndex:
+		// in this case, we have to use `neko is life` api.
 		neko, err := wotoNeko.GetRandomPat()
 		if err != nil {
 			log.Println(err)
@@ -62,37 +81,73 @@ func PatHandler(message *tg.Message, args pTools.Arg) {
 			// don't return it if you got an error!
 			// since we don't know what happened (and it doesn't
 			// matter at all), we will send a wotopat.
-			goto wotoPat
+			patInit()
+
+			id, t := getRandomPat()
+			if t == NONE || ws.IsEmpty(&id) {
+				sendNoPat(message, is_hentai, send_pv)
+				return
+			}
+
+			delFunc()
+			sendPat(message, text, id, t, send_pv, is_reply)
+			return
 		}
 
-		if is_del {
-			req := tg.NewDeleteMessage(message.Chat.ID, message.MessageID)
-			// don't check error or response, we have
-			// more important things to do
-			go settings.GetAPI().Request(req)
+		delFunc()
+		sendNeko(message, text, neko, send_pv, is_reply)
+		return
+	case wv.BaseOneIndex:
+		patInit()
+
+		id, t := getRandomPat()
+		if t == NONE || ws.IsEmpty(&id) {
+			sendNoPat(message, is_hentai, send_pv)
+			return
 		}
 
-		sendNeko(message, neko, send_pv, is_reply)
+		delFunc()
+		sendPat(message, text, id, t, send_pv, is_reply)
+	case wv.BaseTwoIndex:
+		// in this case, we have to use `headp.at` api.
+		neko, err := wotoNeko.GetHeadPat()
+		if err != nil {
+			log.Println(err)
+			// return
+			// don't return it if you got an error!
+			// since we don't know what happened (and it doesn't
+			// matter at all), we will send a wotopat.
+			patInit()
+
+			id, t := getRandomPat()
+			if t == NONE || ws.IsEmpty(&id) {
+				sendNoPat(message, is_hentai, send_pv)
+				return
+			}
+
+			delFunc()
+			sendPat(message, text, id, t, send_pv, is_reply)
+			return
+		}
+
+		delFunc()
+		sendNeko(message, text, neko, send_pv, is_reply)
 		return
 	}
+}
 
-wotoPat:
-	patInit()
-
-	id, t := getRandomPat()
-	if t == NONE || ws.IsEmpty(&id) {
-		sendNoPat(message, is_hentai, send_pv)
-		return
+// getChance will give you the chance number.
+// If ph is true, it will return BaseOneIndex.
+// values:
+//	BaseIndex		=> use neko is life.
+//	BaseOneIndex 	=> use local db.
+//	BaseTwoIndex 	=> use headp.at api.
+func getChance(ph bool) int {
+	if ph {
+		return wv.BaseOneIndex
 	}
 
-	if is_del {
-		req := tg.NewDeleteMessage(message.Chat.ID, message.MessageID)
-		// don't check error or response, we have
-		// more important things to do
-		go settings.GetAPI().Request(req)
-	}
-
-	sendPat(message, id, t, send_pv, is_reply)
+	return time.Now().Second() % wv.BaseThreeIndex
 }
 
 // PatSHandler is entry handler for a sudo pat command.
@@ -109,7 +164,7 @@ func PatSHandler(message *tg.Message, args pTools.Arg) {
 
 	patInit()
 	is_add := args.HasFlag(ADD_FLAG)
-	is_rm := args.HasFlag(RM_FLAG, REM_FLAG, REMOVE_FLAG)
+	is_rm := args.HasFlag(RM_FLAG, REM_FLAG, REMOVE_FLAG) && !is_add
 	is_hentai := args.HasFlag(HENTAI_FLAG)
 	is_reply := message.ReplyToMessage != nil
 
@@ -138,8 +193,15 @@ func PatSHandler(message *tg.Message, args pTools.Arg) {
 
 	if is_add {
 		if is_hentai {
-			if patHExists(id) {
+			exists := false
+			if is_reply {
+				exists = patArrayHExists(message.ReplyToMessage.Photo)
+			} else {
+				exists = patHExists(id)
+			}
+			if exists {
 				sendPatExists(message, id, true)
+				return
 			}
 
 			result, newM := patCli.AddHPat(id, int32(PHOTO_PAT))
@@ -149,8 +211,15 @@ func PatSHandler(message *tg.Message, args pTools.Arg) {
 
 			setNewHPat(&newM)
 		} else {
-			if patExists(id) {
+			exists := false
+			if is_reply {
+				exists = patArrayExists(message.ReplyToMessage.Photo)
+			} else {
+				exists = patExists(id)
+			}
+			if exists {
 				sendPatExists(message, id, true)
+				return
 			}
 
 			result, newM := patCli.AddPat(id, int32(PHOTO_PAT))
@@ -164,8 +233,15 @@ func PatSHandler(message *tg.Message, args pTools.Arg) {
 
 	if is_rm {
 		if is_hentai {
-			if !patHExists(id) {
+			exists := false
+			if is_reply {
+				exists = patArrayHExists(message.ReplyToMessage.Photo)
+			} else {
+				exists = patHExists(id)
+			}
+			if !exists {
 				sendPatExists(message, id, false)
+				return
 			}
 
 			result, newM := patCli.RemoveHPat(id)
@@ -175,8 +251,15 @@ func PatSHandler(message *tg.Message, args pTools.Arg) {
 
 			setNewHPat(&newM)
 		} else {
-			if !patExists(id) {
+			exists := false
+			if is_reply {
+				exists = patArrayExists(message.ReplyToMessage.Photo)
+			} else {
+				exists = patExists(id)
+			}
+			if !exists {
 				sendPatExists(message, id, false)
+				return
 			}
 
 			result, newM := patCli.RemovePat(id)
@@ -191,7 +274,8 @@ func PatSHandler(message *tg.Message, args pTools.Arg) {
 	sendPatAddNotice(message, is_add, is_hentai)
 }
 
-func sendPat(message *tg.Message, ID string, pType patType, pv, reply bool) {
+// sendPat will send the pat (most probably :| )
+func sendPat(message *tg.Message, caption, ID string, pType patType, pv, reply bool) {
 	if message == nil {
 		return
 	}
@@ -221,6 +305,8 @@ func sendPat(message *tg.Message, ID string, pType patType, pv, reply bool) {
 		}
 	}
 
+	photo.Caption = caption
+
 	if _, err := api.Send(photo); err != nil {
 
 		log.Println(err)
@@ -232,7 +318,8 @@ func sendPat(message *tg.Message, ID string, pType patType, pv, reply bool) {
 	}
 }
 
-func sendNeko(message *tg.Message, neko *wotoNeko.NekoBase, pv, reply bool) {
+func sendNeko(message *tg.Message, caption string, neko *wotoNeko.NekoBase,
+	pv, reply bool) {
 	if message == nil {
 		return
 	}
@@ -265,6 +352,7 @@ func sendNeko(message *tg.Message, neko *wotoNeko.NekoBase, pv, reply bool) {
 			}
 		}
 
+		photo.Caption = caption
 		sendIt = photo
 	} else if neko.IsGif() {
 		var gif tg.DocumentConfig
@@ -282,6 +370,7 @@ func sendNeko(message *tg.Message, neko *wotoNeko.NekoBase, pv, reply bool) {
 			}
 		}
 
+		gif.Caption = caption
 		sendIt = gif
 	} else {
 		log.Println(neko.Url)

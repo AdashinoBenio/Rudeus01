@@ -8,8 +8,9 @@ package botCommands
 import (
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/pTools"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/wotoMorse"
-	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/wotoNekosLife"
+	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/wotoNeko"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/wotoPat"
+	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/wotoUD"
 	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -26,45 +27,105 @@ func patHandler(message *tg.Message, args pTools.Arg) {
 }
 
 func tickleNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.TickleHandler(message, args)
+	wotoNeko.TickleHandler(message, args)
 }
 
 func slapNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.SlapHandler(message, args)
+	wotoNeko.SlapHandler(message, args)
 }
 
 func pokeNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.PokeHandler(message, args)
+	wotoNeko.PokeHandler(message, args)
 }
 
 func nekoNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.NekoHandler(message, args)
+	wotoNeko.NekoHandler(message, args)
 }
 
 func meowNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.MeowHandler(message, args)
+	wotoNeko.MeowHandler(message, args)
 }
 
 func lizardNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.LizardHandler(message, args)
+	wotoNeko.LizardHandler(message, args)
 }
 
 func kissNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.KissHandler(message, args)
+	wotoNeko.KissHandler(message, args)
 }
 
 func hugNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.HugHandler(message, args)
+	wotoNeko.HugHandler(message, args)
 }
 
 func foxNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.FoxHandler(message, args)
+	wotoNeko.FoxHandler(message, args)
 }
 
 func feedNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.FeedHandler(message, args)
+	wotoNeko.FeedHandler(message, args)
 }
 
 func cuddleNekoHandler(message *tg.Message, args pTools.Arg) {
-	wotoNekosLife.CuddleHandler(message, args)
+	wotoNeko.CuddleHandler(message, args)
+}
+
+func kemonomimiNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.KemonomimiHandler(message, args)
+}
+
+func holoNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.HoloHandler(message, args)
+}
+
+func smugNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.SmugHandler(message, args)
+}
+
+func bakaNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.BakaHandler(message, args)
+}
+
+func woofNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.WoofHandler(message, args)
+}
+
+func gooseNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.GooseHandler(message, args)
+}
+
+func gecgNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.GecgHandler(message, args)
+}
+
+func avatarNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.AvatarHandler(message, args)
+}
+
+func waifuNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.WaifuHandler(message, args)
+}
+
+func whyNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.WhyHandler(message, args)
+}
+
+func nameNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.NameHandler(message, args)
+}
+
+func catNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.CatHandler(message, args)
+}
+
+func factNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.FactHandler(message, args)
+}
+
+func owoNekoHandler(message *tg.Message, args pTools.Arg) {
+	wotoNeko.OwoHandler(message, args)
+}
+
+func udHandler(message *tg.Message, args pTools.Arg) {
+	wotoUD.UdHandler(message, args)
 }

@@ -27,10 +27,11 @@ func Sudo_handler(message *tg.Message, args pTools.Arg) {
 	// because pTools.Arg also contains the command itself,
 	// however we don't want that here.
 	args[wv.BaseIndex] = wv.EMPTY
+	isMain := appSettings.GetExisting().IsMainSudo(message.From.ID)
 
-	if args.HasFlag(ADD_FLAG) {
+	if args.HasFlag(ADD_FLAG) && isMain {
 		addSudo(message, args)
-	} else if args.HasFlag(REMOVE_FLAG, REM_FLAG, RM_FLAG) {
+	} else if args.HasFlag(REMOVE_FLAG, REM_FLAG, RM_FLAG) && isMain {
 		remSudo(message, args)
 	}
 }
@@ -53,7 +54,7 @@ func addSudo(message *tg.Message, args pTools.Arg) {
 		} else {
 			tmp := args.GetNonFlags()
 			if tmp == nil || len(tmp) <= wv.BaseIndex {
-				invalid_id(message, args.JoinNoneFlags(), send_pv)
+				invalid_id(message, args.JoinNoneFlags(false), send_pv)
 				return
 			}
 
@@ -105,7 +106,7 @@ func remSudo(message *tg.Message, args pTools.Arg) {
 		if message.ReplyToMessage.From != nil {
 			id = message.ReplyToMessage.From.ID
 		} else {
-			invalid_id(message, args.JoinNoneFlags(), send_pv)
+			invalid_id(message, args.JoinNoneFlags(false), send_pv)
 			return
 		}
 	} else {

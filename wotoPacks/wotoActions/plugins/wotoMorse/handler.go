@@ -40,7 +40,7 @@ func ToMorseHandler(message *tg.Message, args pTools.Arg) {
 		}
 	} else {
 		// do not convert the flags to the morse code.
-		full = args.JoinNoneFlags()
+		full = args.JoinNoneFlags(false)
 	}
 
 	if is_bin {

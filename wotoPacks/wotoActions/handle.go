@@ -7,6 +7,7 @@ package wotoActions
 
 import (
 	"github.com/ALiwoto/rudeus01/wotoPacks/interfaces"
+	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/messages/callBackQ"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/messages/textMessage"
 	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -37,6 +38,8 @@ func HandleMessage(update *tg.Update, settings interfaces.WSettings) {
 	switch getMessageType(update) {
 	case NONE:
 		return
+	case CALLBACK_QUERY:
+		callBackQ.QHandler(update.CallbackQuery)
 	case TEXT_MESSAGE:
 		textMessage.HandleTextMessage(update.Message)
 	default:
