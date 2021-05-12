@@ -1,11 +1,20 @@
 package wotoUD
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-func (q *udQuery) setData(collection *UrbanCollection) {
-	q.collection = collection
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+func (o *udOrigin) setCollection(c *UrbanCollection) {
+	if o.collection != c {
+		o.collection = c
+	}
 }
 
-func (q *udQuery) setButtons(b *tgbotapi.InlineKeyboardMarkup) {
-	q.keyboard = b
+func (o *udOrigin) setButtons(b *tg.InlineKeyboardMarkup) {
+	if o.keyboard != b {
+		o.keyboard = b
+	}
 }
+
+//---------------------------------------------------------

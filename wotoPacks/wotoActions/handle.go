@@ -32,9 +32,9 @@ func shouldHandle(update *tg.Update) bool {
 
 // HandleMessage will handle the update comming from the telegram servers.
 func HandleMessage(update *tg.Update, settings interfaces.WSettings) {
-	if update.CallbackQuery != nil {
-		settings.SendSudo(update.CallbackQuery.Data)
-	}
+	//if update.CallbackQuery != nil {
+	//	settings.SendSudo(update.CallbackQuery.Data)
+	//}
 	switch getMessageType(update) {
 	case NONE:
 		return

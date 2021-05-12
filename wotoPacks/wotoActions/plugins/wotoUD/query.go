@@ -1,31 +1,49 @@
 package wotoUD
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	wv "github.com/ALiwoto/rudeus01/wotoPacks/wotoValues"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+)
 
 type udQuery struct {
-	next        bool   // true if it's the next button
-	previous    bool   // false if it's the previous button
-	currentPage uint8  // must be between 1 and 10.
-	word        string // the word used in urban dictionary
-	id          int
-	collection  *UrbanCollection // the collection
-	keyboard    *tgbotapi.InlineKeyboardMarkup
+	next     bool // true if it's the next button
+	previous bool // true if it's the previous button
+	// sound    bool      // true if it's the voice button (TODO)
+	origin *udOrigin // the origin of the ud API.
+
 }
 
-func getNextUdQuery(word string, page uint8, id int) *udQuery {
-	return getUdQuery(word, true, page, id)
+type udOrigin struct {
+	currentPage uint8                    // must be between 1 and 10.
+	word        string                   // the word used in urban dictionary
+	id          int                      // the message id
+	uId         int64                    // the user id (owner of the ud)
+	collection  *UrbanCollection         // the collection
+	keyboard    *tg.InlineKeyboardMarkup //the buttons
 }
 
-func getPreviousUdQuery(word string, page uint8, id int) *udQuery {
-	return getUdQuery(word, false, page, id)
-}
-
-func getUdQuery(word string, next bool, page uint8, mId int) *udQuery {
-	return &udQuery{
-		next:        next,
-		previous:    !next,
-		currentPage: page,
-		word:        word,
+// getNewOrigin will give you a new origin.
+func getNewOrigin(w string, mId int, userId int64) (origin *udOrigin) {
+	return &udOrigin{
+		currentPage: wv.BaseIndex,
+		word:        w,
 		id:          mId,
+		uId:         userId,
+	}
+}
+
+func getNextUdQuery(origin *udOrigin) *udQuery {
+	return getUdQuery(origin, true)
+}
+
+func getPreviousUdQuery(origin *udOrigin) *udQuery {
+	return getUdQuery(origin, false)
+}
+
+func getUdQuery(orig *udOrigin, next bool) *udQuery {
+	return &udQuery{
+		next:     next,
+		previous: !next,
+		origin:   orig,
 	}
 }

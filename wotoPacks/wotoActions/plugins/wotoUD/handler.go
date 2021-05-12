@@ -7,7 +7,6 @@ import (
 	"github.com/ALiwoto/rudeus01/wotoPacks/appSettings"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/plugins/pTools"
 	wq "github.com/ALiwoto/rudeus01/wotoPacks/wotoActions/wotoQuery"
-	"github.com/ALiwoto/rudeus01/wotoPacks/wotoMD"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoSecurity/wotoStrings"
 	wv "github.com/ALiwoto/rudeus01/wotoPacks/wotoValues"
 	"github.com/ALiwoto/rudeus01/wotoPacks/wotoValues/tgMessages"
@@ -30,16 +29,17 @@ func UdHandler(message *tg.Message, args pTools.Arg) {
 	}
 
 	pv := args.HasFlag(PRIVATE_FLAG, PV_FLAG)
-	//hasMsg := args.HasFlag(MSG_FLAG, MESSAGE_FLAG)
+	// hasMsg := args.HasFlag(MSG_FLAG, MESSAGE_FLAG)
 	reply := message.ReplyToMessage != nil
-	//del := reply && args.HasFlag(DEL_FLAG, DELETE_FLAG)
-	//single := args.HasFlag(SINGLE_FLAG)
+	del := reply && args.HasFlag(DEL_FLAG, DELETE_FLAG)
+	single := args.HasFlag(SINGLE_FLAG)
 	text := args.JoinNoneFlags(false)
+
 	if wotoStrings.IsEmpty(&text) {
 		return
 	}
 
-	finalText, ud := defineText(text, wv.BaseIndex)
+	finalText, ud := defineText(text)
 
 	var msg tg.MessageConfig
 
@@ -63,7 +63,19 @@ func UdHandler(message *tg.Message, args pTools.Arg) {
 			msg.ReplyToMessageID = message.MessageID
 		}
 	}
-	msg.ReplyMarkup = getButton(text, wv.BaseOneIndex, message.MessageID, ud)
+
+	if !single {
+		mId := message.MessageID
+		uId := message.From.ID
+		msg.ReplyMarkup = getButton(text, mId, uId, ud)
+	}
+
+	if del {
+		req := tg.NewDeleteMessage(message.Chat.ID, message.MessageID)
+		// don't check error or response, we have
+		// more important things to do
+		go settings.GetAPI().Request(req)
+	}
 
 	msg.ParseMode = tg.ModeMarkdownV2
 	if _, err := api.Send(msg); err != nil {
@@ -75,37 +87,29 @@ func UdHandler(message *tg.Message, args pTools.Arg) {
 		}
 		return
 	}
-
 }
 
-func defineText(word string, page int) (str string, c *UrbanCollection) {
+func defineText(word string) (str string, c *UrbanCollection) {
 	ud, err := Define(word)
 	if err != nil {
 		log.Println(err)
 		return wv.EMPTY, nil
 	}
 
-	if len(ud.List) == wv.BaseIndex {
-		// TODO: return not found or something.
-		return "not found", ud
-	}
-
-	//text = wotoMD.GetNormal(ud.List[0].Def).ToString()
-	normal := wotoMD.GetNormal(ud.List[page].Def)
-	ex := wotoMD.GetItalic(wv.N_ESCAPE + wv.N_ESCAPE + ud.List[0].Example)
-	return normal.Append(ex).ToString(), ud
+	return ud.GetDef(wv.BaseIndex), ud
 }
 
-func getButton(word string, page uint8, id int,
+func getButton(word string, id int, userId int64,
 	c *UrbanCollection) *tg.InlineKeyboardMarkup {
-	next := getNextUdQuery(word, page, id)
-	pre := getPreviousUdQuery(word, page, id)
-	next.setData(c)
-	pre.setData(c)
-	nextID := wq.SetInMap(next)
+
+	origin := getNewOrigin(word, id, userId)
+	origin.setCollection(c)
+	pre := getPreviousUdQuery(origin)
+	next := getNextUdQuery(origin)
 	preID := wq.SetInMap(pre)
-	q1 := wq.GetQuery(wq.UdQueryPlugin, nextID)
-	q2 := wq.GetQuery(wq.UdQueryPlugin, preID)
+	nextID := wq.SetInMap(next)
+	q1 := wq.GetQuery(wq.UdQueryPlugin, preID)
+	q2 := wq.GetQuery(wq.UdQueryPlugin, nextID)
 	b01 := tg.NewInlineKeyboardButtonData(preText, q1.ToString())
 	b02 := tg.NewInlineKeyboardButtonData(nextText, q2.ToString())
 	buttons := tg.NewInlineKeyboardMarkup(
@@ -114,8 +118,7 @@ func getButton(word string, page uint8, id int,
 			b02,
 		),
 	)
-	next.setButtons(&buttons)
-	pre.setButtons(&buttons)
+	origin.setButtons(&buttons)
 
 	return &buttons
 }
@@ -123,6 +126,9 @@ func getButton(word string, page uint8, id int,
 func QUdHanler(query *tg.CallbackQuery, q *wq.QueryBase) {
 	data := q.GetDataQuery()
 	if data == nil {
+		// this the point where we have to show the user:
+		// list is not available anymore.
+		notAvialable(query)
 		return
 	}
 
@@ -132,6 +138,7 @@ func QUdHanler(query *tg.CallbackQuery, q *wq.QueryBase) {
 	}
 
 	udData = data.(*udQuery)
+	origin := udData.origin
 
 	settings := appSettings.GetExisting()
 	if settings == nil {
@@ -143,20 +150,69 @@ func QUdHanler(query *tg.CallbackQuery, q *wq.QueryBase) {
 		return
 	}
 
-	if udData.next {
-		udData.currentPage += wv.BaseOneIndex
-	} else if udData.previous {
-		udData.currentPage -= wv.BaseOneIndex
+	if query.From.ID != origin.uId {
+		config := tg.NewCallbackWithAlert(query.ID, notAllowed)
+		_, err := api.Request(config)
+		if err != nil {
+			log.Println(err)
+		}
+		return
 	}
 
-	text := udData.collection.List[udData.currentPage].Def
+	if udData.next {
+		if origin.currentPage == uint8(len(origin.collection.List)) {
+			origin.currentPage = wv.BaseOneIndex
+		} else {
+			origin.currentPage++
+			//log.Println("In next, else. current:", udData.currentPage)
+		}
+		//log.Println("in next")
+	} else if udData.previous {
+		if origin.currentPage == wv.BaseOneIndex {
+			origin.currentPage = uint8(len(origin.collection.List))
+		} else {
+			origin.currentPage--
+		}
+
+		//log.Println("in pre")
+	}
+
+	//log.Println("my current is: ", udData.currentPage)
+	//log.Println("List: ", udData.collection.List, "adn len:", len(udData.collection.List))
+
+	page := origin.currentPage - wv.BaseOneIndex
+	text := origin.collection.GetDef(page)
 	chat := query.Message.Chat.ID
 	msgId := query.Message.MessageID
 
 	eConfig := tg.NewEditMessageText(chat, msgId, text)
-	eConfig.ReplyMarkup = udData.keyboard
+	eConfig.ReplyMarkup = origin.keyboard
 	eConfig.ParseMode = tg.ModeMarkdownV2
 
-	api.Request(eConfig)
-	wq.RemoveFromMap(q.Data)
+	_, err := api.Request(eConfig)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func notAvialable(query *tg.CallbackQuery) {
+	settings := appSettings.GetExisting()
+	if settings == nil {
+		return
+	}
+
+	api := settings.GetAPI()
+	if api == nil {
+		return
+	}
+
+	chat := query.Message.Chat.ID
+	msg := query.Message.MessageID
+	config := tg.NewEditMessageText(chat, msg, query.Message.Text)
+	config.Entities = query.Message.Entities
+	_, err := api.Request(config)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
