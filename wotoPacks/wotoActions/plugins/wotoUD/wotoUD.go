@@ -34,11 +34,11 @@ type UrbanCollection struct {
 	List []UrbanDictionary `json:"list"`
 }
 
-//type Similarity struct {
-//	array []SimArray
+//type similarity struct {
+//	array []simArray
 //}
 
-//type SimArray struct {
+//type simArray struct {
 //	value string
 //}
 

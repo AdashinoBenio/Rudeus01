@@ -26,7 +26,7 @@ type udOrigin struct {
 // getNewOrigin will give you a new origin.
 func getNewOrigin(w string, mId int, userId int64, unique string) (origin *udOrigin) {
 	return &udOrigin{
-		currentPage: wv.BaseIndex,
+		currentPage: wv.BaseOneIndex,
 		word:        w,
 		id:          mId,
 		uId:         userId,

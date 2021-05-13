@@ -47,9 +47,27 @@ func UdHandler(message *tg.Message, args pTools.Arg) {
 
 	if !found {
 		tmpStr := fmt.Sprintf(notFound, text)
-		tmp := wotoMD.GetNormal(tmpStr)
-		tmp = tmp.Append(wotoMD.GetItalic(wannaSimilarities))
-		finalText = tmp.ToString()
+
+		sim, simErr := GetSimilarWord(text)
+		simOK := simErr == nil && sim != nil && len(sim) != wv.BaseIndex
+
+		if !simOK {
+			finalText = wotoMD.GetNormal(tmpStr).ToString()
+		} else {
+			tmp := wotoMD.GetNormal(tmpStr)
+			mean := simNotice
+			num := wv.BaseOneIndex
+			for _, s := range sim {
+				if ws.IsEmpty(&s) {
+					continue
+				}
+
+				mean += strconv.Itoa(num) + numSep + s + wv.N_ESCAPE
+				num++
+			}
+			tmp = tmp.Append(wotoMD.GetItalic(mean))
+			finalText = tmp.ToString()
+		}
 	}
 
 	var msg tg.MessageConfig
@@ -171,6 +189,8 @@ func QUdHanler(query *tg.CallbackQuery, q *wq.QueryBase) {
 		return
 	}
 
+	//log.Println("B :", origin.currentPage)
+
 	if udData.next {
 		if origin.currentPage == uint8(len(origin.collection.List)) {
 			origin.currentPage = wv.BaseOneIndex
@@ -184,9 +204,10 @@ func QUdHanler(query *tg.CallbackQuery, q *wq.QueryBase) {
 			origin.currentPage--
 		}
 	}
-
+	//log.Println("B :", origin.currentPage)
 	page := origin.currentPage - wv.BaseOneIndex
 	text := origin.collection.GetDef(page)
+	//log.Println(text)
 	chat := query.Message.Chat.ID
 	msgId := query.Message.MessageID
 
