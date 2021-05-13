@@ -21,4 +21,8 @@ const (
 		wv.FORMAT_VALUE + " of " + wv.FORMAT_VALUE
 	listNAvailble = "list is not available anymore."
 	notAllowed    = "Owo ~ You are not allowed to use this button!"
+	notFound      = "couldn't find \"" +
+		wv.FORMAT_VALUE + "\"\n"
+	wannaSimilarities = "do you want to take a look at " +
+		"similar words?"
 )

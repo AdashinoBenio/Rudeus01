@@ -34,6 +34,14 @@ type UrbanCollection struct {
 	List []UrbanDictionary `json:"list"`
 }
 
+//type Similarity struct {
+//	array []SimArray
+//}
+
+//type SimArray struct {
+//	value string
+//}
+
 // Define, will define the word, using
 // urban dictionary public API, version 0? :/
 // It will return a pointer to an urban collection.
