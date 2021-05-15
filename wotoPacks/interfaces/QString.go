@@ -8,8 +8,9 @@ package interfaces
 type QString interface {
 	Length() int
 	IsEmpty() bool
-	GetValue() *string
-	GetString() string
+	GetValue() string
 	GetIndexV(_index int) rune
 	IsEqual(_strong QString) bool
+	Split(...QString) []QString
+	SplitStr(...string) []QString
 }

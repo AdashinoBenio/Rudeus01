@@ -6,11 +6,7 @@
 package wotoStrong
 
 import (
-	"strconv"
-	"strings"
-
-	ws "github.com/ALiwoto/rudeus01/wotoPacks/wotoSecurity/wotoStrings"
-	wv "github.com/ALiwoto/rudeus01/wotoPacks/wotoValues"
+	tfc "github.com/ALiwoto/rudeus01/wotoPacks/interfaces"
 )
 
 const (
@@ -20,11 +16,7 @@ const (
 )
 
 const (
-	// the StrongBase is Hexadecimal, which is base 16.
-	//StrongBase = 0x010
-	// the StrongOffSet is the offset value of each character in the
-	// strong string.
-	StrongOffSet = 0x00D
+	StrongOffSet = 13
 )
 
 // the StrongString used in the program for High-security!
@@ -32,54 +24,54 @@ type StrongString struct {
 	_value []rune
 }
 
-// generateStrongString will generate a new StrongString
+// Ss will generate a new StrongString
 // with the specified non-encoded string value.
-func GenerateStrongString(_s string) StrongString {
+func Ss(_s string) StrongString {
 	_strong := StrongString{}
 	_strong._setValue(_s)
 	return _strong
 }
 
-// getStrong will give you an already encoded StrongString
-// which provided by method _getString() method and saved in the
-// data base.
-func GetStrong(_s string) StrongString {
+// Qss will generate a new QString
+// with the specified non-encoded string value.
+func Qss(_s string) tfc.QString {
+	str := Ss(_s)
+	return &str
+}
+
+// Sb will generate a new StrongString
+// with the specified non-encoded bytes value.
+func Sb(_b []byte) StrongString {
+	return Ss(string(_b))
+}
+
+// QSb will generate a new QString
+// with the specified non-encoded bytes value.
+func Qsb(_b []byte) tfc.QString {
+	str := Ss(string(_b))
+	return &str
+}
+
+// SS will generate a new StrongString
+// with the specified non-encoded string value.
+func SsPtr(_s string) *StrongString {
 	_strong := StrongString{}
-	myBytes := toByteArrayS(_s, wv.LineStr)
-	_strong._setValueByBytes(myBytes)
-	return _strong
+	_strong._setValue(_s)
+	return &_strong
 }
 
-// convert the specified string array (encoded) to byte array.
-func _toByteArray(myStrings []string) []rune {
-	myBytes := make([]rune, 0)
-	for _, _current := range myStrings {
-		_myInt, _ := strconv.Atoi(_current)
-		myBytes = append(myBytes, rune(_myInt+StrongOffSet))
+func ToStrSlice(qs []tfc.QString) []string {
+	tmp := make([]string, len(qs))
+	for i, current := range qs {
+		tmp[i] = current.GetValue()
 	}
-	return myBytes
+	return tmp
 }
 
-// convert the specified string (encoded) to byte array.
-func toByteArrayS(theString string, separator string) []rune {
-	return _toByteArray(ws.FixSplit(strings.Split(theString, separator)))
-}
-
-// convertToBytes will convert an ordinaryString (non-encoded) to byte array.
-func convertToBytes(ordinaryString string) []rune {
-	_runes := []rune(ordinaryString)
-	finalRune := make([]rune, len(_runes), cap(_runes))
-	for _i, _current := range _runes {
-		finalRune[_i] = _current + StrongOffSet
+func ToQSlice(strs []string) []tfc.QString {
+	tmp := make([]tfc.QString, len(strs))
+	for i, current := range strs {
+		tmp[i] = SsPtr(current)
 	}
-	return finalRune
-}
-
-// ConvertToString will convert the specified byte arrays to string.
-func ConvertToString(_b []rune) string {
-	_total := wv.EMPTY
-	for _, _current := range _b {
-		_total += string(_current - StrongOffSet)
-	}
-	return _total
+	return tmp
 }

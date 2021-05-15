@@ -3,10 +3,9 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE', which is part of the source code.
 
-package wotoValues
+package wotoTranslate
 
+// the messages for wotoMorse plugin.
 const (
-	DY           = "$"
-	WOTO_TEXT    = "WOTO_TEXT"
-	DY_WOTO_TEXT = DY + WOTO_TEXT
+	translatedText = "Translated:\n"
 )

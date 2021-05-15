@@ -22,35 +22,9 @@ import (
 )
 
 func main() {
-	// str, err := wotoUD.GetSimilarWord("partucularly")
-	//str, err := wotoUD.GetSimilarWord("submarne")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	//str := wotoTranslate.DetectLanguage("hello!")
+	//str := wotoTranslate.Translate("")
 	//log.Println(str)
-	//resp, err := http.Get("https://api.gnuweeb.org/google_translate.php?fr=en&to=ja&text=Good+Morning")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//defer resp.Body.Close()
-	//body10, err := ioutil.ReadAll(resp.Body)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//log.Fatal(string(body10))
-
-	// https://api.gnuweeb.org/google_translate.php?fr=en&to=ja&text=Good+Morning
-	//resp, err1 := http.Get("https://api.urbandictionary.com/v0/define?term=mamad")
-	//resp, err1 := http.Get("https://api.gnuweeb.org/google_translate.php?fr=en&to=ja&text=Good+Morning")
-	//if err1 != nil {
-	//	log.Fatal(err1)
-	//}
-
-	//str, err2 := ioutil.ReadAll(resp.Body)
-	//if err2 != nil {
-	//	log.Fatal(err2)
-	//}
-	//log.Println(string(str))
 
 	port := os.Getenv(wv.APP_PORT)
 	if ws.IsEmpty(&port) {
