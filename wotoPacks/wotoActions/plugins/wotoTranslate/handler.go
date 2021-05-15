@@ -86,12 +86,15 @@ func sendTr(message *tg.Message, morse *string, reply, pv bool) {
 			msg.ReplyToMessageID = message.MessageID
 		}
 	}
-	msg.ParseMode = tg.ModeMarkdownV2
+
+	//msg.ParseMode = tg.ModeMarkdownV2
 	if _, err := api.Send(msg); err != nil {
 
 		log.Println(err)
 		tgErr := tgMessages.GetTgError(err)
-		tgErr.SendRandomErrorMessage(message)
+		if tgErr != nil {
+			tgErr.SendRandomErrorMessage(message)
+		}
 		return
 	}
 }
