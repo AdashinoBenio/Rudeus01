@@ -1,6 +1,7 @@
 package wotoTranslate
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/ALiwoto/rudeus01/wotoPacks/appSettings"
@@ -52,12 +53,16 @@ func TrHandler(message *tg.Message, args pTools.Arg) {
 		return
 	}
 
-	trl := Translate(cl[wv.BaseIndex].TheLang, toLang, full)
-
 	var str string
-	for _, current := range trl {
-		str += current + "\n"
+
+	trl := Translate(l1, toLang, full)
+	if trl.HasWrongNess {
+		str += "Translated \"" + trl.CorrectedValue + "\" instead.\n"
 	}
+	str += trl.TranslatedText
+
+	str += "\n\nDE:\n" + fmt.Sprint(l1.Data.Detections)
+
 	sendTr(message, &str, is_reply, send_pv)
 }
 

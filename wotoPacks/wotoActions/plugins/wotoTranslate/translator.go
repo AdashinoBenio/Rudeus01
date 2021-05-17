@@ -23,15 +23,31 @@ import (
 
 // Translate will translate the specified text value
 // tp english.
-func Translate(fr, to, text string) []string {
-	if ws.IsEmpty(&text) {
+func Translate(lang *Lang, to, text string) *WotoTr {
+	if ws.IsEmpty(&text) || lang == nil {
 		return nil
 	}
 
-	text = trGoogle(fr, to, text)
-	s := parseGData(text)
+	if lang.Data == nil {
+		return nil
+	}
 
-	return s
+	if len(lang.Data.Detections) == wv.BaseIndex {
+		return nil
+	}
+
+	l1 := lang.Data.Detections[wv.BaseIndex]
+
+	text = trGoogle(l1.TheLang, to, text)
+	w := WotoTr{
+		OriginalText: text,
+		From:         l1.TheLang,
+		To:           to,
+	}
+
+	parseGData(&w)
+
+	return &w
 }
 
 func TrGnuTxt(fr, to, text string) string {
@@ -65,7 +81,8 @@ func TrGnuTxt(fr, to, text string) string {
 	return g.Result
 }
 
-func parseGData(text string) []string {
+func parseGData(wTr *WotoTr) {
+	text := wTr.OriginalText
 	test := ws.Split(text, wv.BracketOpen, wv.Bracketclose)
 	original := make([]string, wv.BaseIndex)
 	accepted := func(v string) bool {
@@ -117,10 +134,12 @@ func parseGData(text string) []string {
 		}
 	}
 
-	return parseGparams(original)
+	strs := parseGparams(original, wTr)
+
+	arrangeParams(strs, wTr)
 }
 
-func parseGparams(value []string) []string {
+func parseGparams(value []string, wTr *WotoTr) []string {
 	//null,
 	//null,
 	// \"ja\"
@@ -133,6 +152,21 @@ func parseGparams(value []string) []string {
 	// \n,\"ja\",1,\"en\",
 	// \"konnichiwa. ohayou minna \",\"en\",\"ja\",true
 	// \n",null,null,null,"generic"
+	if wTr.Road == nil {
+		wTr.Road = make(map[int]bool)
+	}
+
+	index := wv.BaseIndex
+
+	for _, c := range wTr.OriginalText {
+		if string(c) == wv.N_ESCAPE {
+			wTr.Road[index] = false
+		}
+		if string(c) == wv.Point {
+			wTr.Road[index] = true
+		}
+		index++
+	}
 	tmp := strings.Join(value, wv.DY_WOTO_TEXT)
 	tmp = strings.ReplaceAll(tmp, NullN, wv.EMPTY)
 	tmp = strings.ReplaceAll(tmp, NullCValueR, wv.EMPTY)
@@ -194,6 +228,36 @@ func parseGparams(value []string) []string {
 	}
 
 	return final
+}
+
+func arrangeParams(values []string, wTr *WotoTr) *WotoTr {
+	index := wv.BaseIndex
+	for _, current := range values {
+		//if i == wv.BaseIndex {
+		// TODO
+		//}
+		if strings.Contains(current, WrongNessOpen) {
+			wTr.HasWrongNess = true
+			current = strings.ReplaceAll(current, WrongNessOpen, wv.EMPTY)
+			current = strings.ReplaceAll(current, WrongNessClose, wv.EMPTY)
+			current = strings.TrimPrefix(current, wv.BackSlash)
+			current = strings.ReplaceAll(current, wv.BackSlash, wv.EMPTY)
+			wTr.CorrectedValue = current
+		} else {
+			if wTr.Road != nil {
+				if !wTr.Road[index] {
+					current += wv.N_ESCAPE
+				} else {
+					current = strings.TrimPrefix(current, wv.N_ESCAPE)
+					current = strings.TrimSuffix(current, wv.N_ESCAPE)
+				}
+			}
+			wTr.TranslatedText += current
+		}
+	}
+	// TODO!
+	//wTr.TranslatedText = strings.Join(values, wv.N_ESCAPE)
+	return wTr
 }
 
 // trGAuto will translate the `text`
