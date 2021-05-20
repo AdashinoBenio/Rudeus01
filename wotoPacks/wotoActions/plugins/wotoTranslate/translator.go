@@ -52,8 +52,6 @@ func Translate(lang *Lang, to, text string) *WotoTr {
 	}
 
 	tw := parseGData(&w)
-	//log.Println("The Origin: ", tw.OriginalText)
-	//log.Println("after after bad end:", tw.TranslatedText)
 
 	return tw
 }

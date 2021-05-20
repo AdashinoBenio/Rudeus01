@@ -41,7 +41,7 @@ const (
 		" is not in my sodu list! *.*"
 
 	INVALID_ID_SUDO_M = "Id " + wotoValues.FORMAT_VALUE +
-		" is not in correct format! ¯\\_(ツ)_/¯"
+		" is not in correct format!"
 	INVALID_ID_SUDO_MPV = "You dumb! Id " + wotoValues.FORMAT_VALUE +
 		" is not in correct format! (-.-)"
 )

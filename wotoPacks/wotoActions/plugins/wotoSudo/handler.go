@@ -49,7 +49,7 @@ func addSudo(message *tg.Message, args pTools.Arg) {
 	send_pv := args.HasFlag(PV_FLAG, PRIVATE_FLAG)
 
 	if is_reply {
-		if !ws.IsEmpty(&message.ReplyToMessage.Text) {
+		if message.ReplyToMessage.From != nil {
 			id = message.ReplyToMessage.From.ID
 		} else {
 			tmp := args.GetNonFlags()
@@ -146,8 +146,7 @@ func added_notice(message *tg.Message, id int64, pv bool) {
 		return
 	}
 
-	reply := message.ReplyToMessage != nil &&
-		!ws.IsEmpty(&message.ReplyToMessage.Text)
+	reply := message.ReplyToMessage != nil
 
 	api := settings.GetAPI()
 	if api == nil {
@@ -246,8 +245,7 @@ func not_in_list(message *tg.Message, id int64, pv bool) {
 		return
 	}
 
-	reply := message.ReplyToMessage != nil &&
-		!ws.IsEmpty(&message.ReplyToMessage.Text)
+	reply := message.ReplyToMessage != nil
 
 	api := settings.GetAPI()
 	if api == nil {
